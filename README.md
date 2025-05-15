@@ -1,7 +1,13 @@
-# Python configs
+# <img src="https://raw.githubusercontent.com/llnl/quandary/main/quandary_logo/quandary-logo_logo-inline-color.png" width="512" alt="Quandary"/>
 
+[Quandary](https://github.com/LLNL/quandary) provides optimal control for open and closed quantum systems.
 
-# C++ configs
+This repository contains example python codes and configurations for Quandary.
+
+# Python examples
+See [Quandary](https://github.com/LLNL/quandary) for instructions on running through python.
+
+# Config files
 Gate optimization CNOT:
   * Optimizes for a CNOT gate on two coupled qubits each modelled with 2 energy levels. 
   * T = 200ns, time step size = 0.1ns
@@ -20,3 +26,9 @@ State-to-state:
   * Schroedinger's solver (closed-system optimization)
   * Can run on one core (one initial condition)
 
+
+# License
+
+Quandary is distributed under the terms of the MIT license. All new contributions must be made under this license. See LICENSE, and NOTICE, for details. 
+
+SPDX-License-Identifier: MIT
