@@ -16,7 +16,7 @@ rotfreq = favg*np.ones(len(freq01))
 T = 200.0
 
 # Bounds on the control pulse (in rotational frame, p and q) [MHz] per oscillator
-maxctrl_MHz = 30.0*np.ones(len(freq01))  
+maxctrl = 30.0e-3*np.ones(len(freq01))  
 
 # Set up a SWAP target gate (in essential level dimensions)
 unitary = np.identity(4)
@@ -30,7 +30,7 @@ unitary[2,2] = 0.0
 verbose = True 
 
 # Prepare Quandary
-quandary = Quandary(freq01=freq01, Jkl=Jkl, rotfreq=rotfreq, T=T, maxctrl_MHz=maxctrl_MHz, targetgate=unitary, verbose=verbose)
+quandary = Quandary(freq01=freq01, Jkl=Jkl, rotfreq=rotfreq, T=T, maxctrl=maxctrl, targetgate=unitary, verbose=verbose)
 
 # Execute quandary
 datadir = "SWAP12_run_dir"

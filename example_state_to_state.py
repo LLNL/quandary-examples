@@ -15,14 +15,14 @@ selfkerr = [0.2198]
 T = 50.0
 
 # Bounds on the control pulse (in rotational frame, p and q) [MHz] per oscillator
-maxctrl_MHz = 4.0  
+maxctrl = 4.0e-3
 
 # Set up the initial and the target state (in essential level dimensions)
 initialcondition = [1.0, 0.0]
 targetstate =  [1.0/np.sqrt(2), 1.0/np.sqrt(2)] 
 
 # Prepare Quandary configuration. The 'Quandary' dataclass gathers all configuration options and sets defaults for those member variables that are not passed through the constructor here. It is advised to compare what other defaults are set in the Quandary constructor (beginning of quandary.py)
-quandary = Quandary(Ne=Ne, Ng=Ng, freq01=freq01, selfkerr=selfkerr, maxctrl_MHz=maxctrl_MHz, initialcondition=initialcondition, targetstate=targetstate, T=T, tol_infidelity=1e-5, rand_seed=4321)
+quandary = Quandary(Ne=Ne, Ng=Ng, freq01=freq01, selfkerr=selfkerr, maxctrl=maxctrl, initialcondition=initialcondition, targetstate=targetstate, T=T, tol_infidelity=1e-5, rand_seed=4321)
 
 # # Execute quandary.
 t, pt, qt, infidelity, expectedEnergy, population = quandary.optimize()

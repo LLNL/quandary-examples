@@ -13,7 +13,6 @@ do_analyze = False
 do_prune = False
 
 # Standard Hamiltonian and Lindblad model setup
-unitMHz = True
 Ne = [3]			# Number of essential levels
 Ng = [0]			# Number of guard levels
 freq01 = [4105.95]  # 01- transition [MHz]
@@ -54,7 +53,7 @@ for ctrlMHz in initctrl_MHz:
 	trainingdatadir.append(cwd+"/"+dirprefix+"_ctrlMHz"+str(ctrlMHz)+"_asmeasured")
 
 	# Setup quandary object using the standard Hamiltonian model.
-	quandary = Quandary(Ne=Ne, Ng=Ng, freq01=freq01, rotfreq=rotfreq, selfkerr=selfkerr, T=T, targetgate=unitary, verbose=verbose, rand_seed=rand_seed, T1=T1, T2=T2, initialcondition=initialcondition, dT=dt, randomize_init_ctrl=randomize_init_ctrl, initctrl_MHz=ctrlMHz, output_frequency=output_frequency, unitMHz=unitMHz) 
+	quandary = Quandary(Ne=Ne, Ng=Ng, freq01=freq01, rotfreq=rotfreq, selfkerr=selfkerr, T=T, targetgate=unitary, verbose=verbose, rand_seed=rand_seed, T1=T1, T2=T2, initialcondition=initialcondition, dT=dt, randomize_init_ctrl=randomize_init_ctrl, initctrl=ctrlMHz, output_frequency=output_frequency) 
 
 	if do_datageneration:
 

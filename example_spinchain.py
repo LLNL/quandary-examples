@@ -104,7 +104,7 @@ initcondstr = "pure, "
 for e in initstate:
 	initcondstr += str(e) +", "
 freq01, crosskerr, Jkl = mapCoeffs_SpinChainToQuandary(N, h, U, J)
-quandary = Quandary(Ne=[2 for _ in range(N)], Ng=[0 for _ in range(N)], freq01=freq01, rotfreq=np.zeros(N), crosskerr=crosskerr, Jkl=Jkl, initialcondition=initcondstr, T=T, dT=dT, initctrl_MHz=0.0, carrier_frequency=[[0.0] for _ in range(N)], verbose=verbose)
+quandary = Quandary(Ne=[2 for _ in range(N)], Ng=[0 for _ in range(N)], freq01=freq01, rotfreq=np.zeros(N), crosskerr=crosskerr, Jkl=Jkl, initialcondition=initcondstr, T=T, dT=dT, initctrl=0.0, carrier_frequency=[[0.0] for _ in range(N)], verbose=verbose)
 
 # Storage for averaged magnetization. Matrix rows = sites, cols = time
 magnet = np.zeros((N,quandary.nsteps+1))

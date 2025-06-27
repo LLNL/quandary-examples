@@ -14,15 +14,15 @@ selfkerr = [0.2198]
 # Set the total time duration (ns)
 T = 100.0
 
-# Bounds on the control pulse (in rotational frame, p and q) [MHz] per oscillator
-maxctrl_MHz = 8.0
+# Bounds on the control pulse (in rotational frame, p and q) per oscillator
+maxctrl = 8e-3
 
 # Set up a target gate (in essential level dimensions)
 unitary = [[0,0,1],[0,1,0],[1,0,0]]  # Swaps first and last level
 # print(unitary)
 
 # Prepare Quandary with those options. This set default options for all member variables and overwrites those that are passed through the constructor here. Use help(Quandary) to see all options.
-quandary = Quandary(Ne=Ne, Ng=Ng, freq01=freq01, selfkerr=selfkerr, maxctrl_MHz=maxctrl_MHz, targetgate=unitary, T=T, rand_seed=1234)
+quandary = Quandary(Ne=Ne, Ng=Ng, freq01=freq01, selfkerr=selfkerr, maxctrl=maxctrl, targetgate=unitary, T=T, rand_seed=1234)
 
 # Execute quandary. Default number of executing cores is the essential Hilbert space dimension. Limit the number of cores by passing ncores=<int>. Use help(quandary.optimize) to see all arguments.
 datadir="./SWAP02_run_dir"

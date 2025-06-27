@@ -12,7 +12,6 @@ do_plot3D = False
 do_analyze = True 
 do_extrapolate = False
 
-unitMHz = True 
 
 # Best-guess system description
 Ne = [3]
@@ -61,7 +60,7 @@ for pval in pvals:
 	for qval in qvals:
 
 		# Set up Quandary with standard Hamiltonian model 
-		quandary = Quandary(Ne=Ne, Ng=Ng, freq01=freq01, rotfreq=rotfreq, selfkerr=selfkerr, T=T, dT=dT, targetgate=unitary, verbose=verbose, rand_seed=rand_seed, T1=T1, T2=T2, initialcondition=initialcondition, output_frequency=output_frequency, randomize_init_ctrl=randomize_ctrl, initctrl_MHz=initctrl_MHz, carrier_frequency=carrier_freq, unitMHz=unitMHz) 
+		quandary = Quandary(Ne=Ne, Ng=Ng, freq01=freq01, rotfreq=rotfreq, selfkerr=selfkerr, T=T, dT=dT, targetgate=unitary, verbose=verbose, rand_seed=rand_seed, T1=T1, T2=T2, initialcondition=initialcondition, output_frequency=output_frequency, randomize_init_ctrl=randomize_ctrl, initctrl=initctrl, carrier_frequency=carrier_freq) 
 
 		# Set the UDE model: List of learnable terms, containing "hamiltonian" and/or "lindblad"
 		UDEmodel = "hamiltonian, lindblad"   
