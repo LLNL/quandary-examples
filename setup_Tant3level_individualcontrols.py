@@ -37,7 +37,7 @@ initialcondition = "pure, 0"
 
 # Initial controls - will be overwritten by data
 randomize_ctrl = False
-initctrl_MHz = 1.0
+initctrl = 1.0
 carrier_freq = [[0.0]]
 verbose = False
 rand_seed=1234
