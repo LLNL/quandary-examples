@@ -81,8 +81,6 @@ for ctrlMHz in initctrl_MHz:
 # Set the UDE model: List of learnable terms, containing "hamiltonian" and/or "lindblad" and/or "transferLinear"
 UDEmodel = "transferLinear"
 
-maxcores = 1 # Note: currently, training only works in serial mode
-
 # Set the training time domain
 T_train = T	  
 # Add data type specifyier to the first element of the data list
@@ -122,7 +120,7 @@ if do_training:
 	print("\n Starting UDE training for UDE model = ", UDEmodel, ")...")
 
 	# Start training, use the unperturbed control parameters in pcof_org
-	quandary.training(pcof0=pcof_org, trainingdatadir=trainingdatadir, UDEmodel=UDEmodel, datadir=UDEdatadir, T_train=T_train, maxcores=maxcores)
+	quandary.training(pcof0=pcof_org, trainingdatadir=trainingdatadir, UDEmodel=UDEmodel, datadir=UDEdatadir, T_train=T_train)
 
 	filename = UDEdatadir + "/params.dat"
 	learnparams_opt = np.loadtxt(filename)
@@ -130,9 +128,9 @@ if do_training:
 
 	# Simulate forward with optimized paramters to write out the Training data evolutions and the learned evolution
 	print("\n -> Eval loss of optimized UDE model.")
-	quandary.UDEsimulate(trainingdatadir=trainingdatadir, UDEmodel=UDEmodel, datadir=UDEdatadir+"/FWD_opt", T_train=quandary.T, learn_params=learnparams_opt, maxcores=maxcores)
+	quandary.UDEsimulate(trainingdatadir=trainingdatadir, UDEmodel=UDEmodel, datadir=UDEdatadir+"/FWD_opt", T_train=quandary.T, learn_params=learnparams_opt)
 
 	# Simulate forward the baseline model using identity transfer function
 	identityinit = np.ones(len(learnparams_opt))
 	print("\n -> Eval loss of initial guess UDE model.")
-	quandary.UDEsimulate(trainingdatadir=trainingdatadir, UDEmodel=UDEmodel, datadir=UDEdatadir+"/FWD_identityinit", T_train=quandary.T, learn_params=identityinit, maxcores=maxcores)
+	quandary.UDEsimulate(trainingdatadir=trainingdatadir, UDEmodel=UDEmodel, datadir=UDEdatadir+"/FWD_identityinit", T_train=quandary.T, learn_params=identityinit)
