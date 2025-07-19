@@ -112,7 +112,7 @@ UDEmodel = "hamiltonian, lindblad"
 # Set the training time domain
 T_train = T	  
 # Add data type specifyier to the first element of the data list
-trainingdatadir[0] = "synthetic, "+trainingdatadir[0]
+trainingdatadir[0] = "syntheticRho, "+trainingdatadir[0]
 
 # Switch between tikhonov regularization norms (L1 or L2 norm)
 tik0_onenorm = True 			#  Use L1 for sparsification property
@@ -137,6 +137,7 @@ quandary.maxiter = 150
 # quandary.maxiter = 2
 
 if do_training:
+	maxcores = 1 # Generalize to multiple tasks. Fix me!
 	print("\n Starting UDE training (UDEmodel=", UDEmodel, ")...")
 
 	if do_prune:
@@ -146,10 +147,10 @@ if do_training:
 		cutoff = 1e-1
 		params = [0.0 if abs(p) < cutoff else p for p in params]
 		# print("SPARSE ", params)
-		quandary.training(trainingdatadir=trainingdatadir, UDEmodel=UDEmodel, datadir=UDEdatadir, T_train=T_train, learn_params=params)
+		quandary.training(trainingdatadir=trainingdatadir, UDEmodel=UDEmodel, datadir=UDEdatadir, T_train=T_train, learn_params=params, maxcores=maxcores)
 	else:
 		# Start training from scratch
-		quandary.training(trainingdatadir=trainingdatadir, UDEmodel=UDEmodel, datadir=UDEdatadir, T_train=T_train)
+		quandary.training(trainingdatadir=trainingdatadir, UDEmodel=UDEmodel, datadir=UDEdatadir, T_train=T_train, maxcores=maxcores)
 
 	# Simulate forward with optimized paramters to write out the Training data evolutions and the learned evolution
 	filename = UDEdatadir + "/params.dat"

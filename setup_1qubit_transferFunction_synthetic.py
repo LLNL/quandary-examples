@@ -81,10 +81,12 @@ for ctrlMHz in initctrl_MHz:
 # Set the UDE model: List of learnable terms, containing "hamiltonian" and/or "lindblad" and/or "transferLinear"
 UDEmodel = "transferLinear"
 
+maxcores = 1 # Note: currently, training only works in serial mode
+
 # Set the training time domain
 T_train = T	  
 # Add data type specifyier to the first element of the data list
-trainingdatadir[0] = "synthetic, "+trainingdatadir[0]
+trainingdatadir[0] = "syntheticRho, "+trainingdatadir[0]
 
 # Switch between tikhonov regularization norms (L1 or L2 norm)
 tik0_onenorm = True 			#  Use L1 for sparsification property
@@ -120,7 +122,7 @@ if do_training:
 	print("\n Starting UDE training for UDE model = ", UDEmodel, ")...")
 
 	# Start training, use the unperturbed control parameters in pcof_org
-	quandary.training(pcof0=pcof_org, trainingdatadir=trainingdatadir, UDEmodel=UDEmodel, datadir=UDEdatadir, T_train=T_train)
+	quandary.training(pcof0=pcof_org, trainingdatadir=trainingdatadir, UDEmodel=UDEmodel, datadir=UDEdatadir, T_train=T_train, maxcores=maxcores)
 
 	filename = UDEdatadir + "/params.dat"
 	learnparams_opt = np.loadtxt(filename)
@@ -128,9 +130,9 @@ if do_training:
 
 	# Simulate forward with optimized paramters to write out the Training data evolutions and the learned evolution
 	print("\n -> Eval loss of optimized UDE model.")
-	quandary.UDEsimulate(trainingdatadir=trainingdatadir, UDEmodel=UDEmodel, datadir=UDEdatadir+"/FWD_opt", T_train=quandary.T, learn_params=learnparams_opt)
+	quandary.UDEsimulate(trainingdatadir=trainingdatadir, UDEmodel=UDEmodel, datadir=UDEdatadir+"/FWD_opt", T_train=quandary.T, learn_params=learnparams_opt, maxcores=maxcores)
 
 	# Simulate forward the baseline model using identity transfer function
 	identityinit = np.ones(len(learnparams_opt))
 	print("\n -> Eval loss of initial guess UDE model.")
-	quandary.UDEsimulate(trainingdatadir=trainingdatadir, UDEmodel=UDEmodel, datadir=UDEdatadir+"/FWD_identityinit", T_train=quandary.T, learn_params=identityinit)
+	quandary.UDEsimulate(trainingdatadir=trainingdatadir, UDEmodel=UDEmodel, datadir=UDEdatadir+"/FWD_identityinit", T_train=quandary.T, learn_params=identityinit, maxcores=maxcores)
