@@ -5,6 +5,8 @@
 from quandary import * 
 np.set_printoptions( linewidth=800)
 
+maxcores = 8 # Maximum number of cores used. 
+
 do_datageneration = True 
 do_training = True 
 do_extrapolate = True 
@@ -85,7 +87,7 @@ for ctrlMHz in constctrl_MHz:
 	quandary_mod = Quandary(Ne=Ne, Ng=Ng, T=T, targetgate=unitary, verbose=verbose, rand_seed=rand_seed, T1=T1, T2=T2, standardmodel=False, Hc_re=Hc_re_mod, Hc_im=Hc_im_mod, Hsys=Hsys_mod, carrier_frequency=quandary.carrier_frequency, initialcondition=initialcondition, randomize_init_ctrl=randomize_init_ctrl, initctrl=[ctrlMHz, ctrlMHz], dT=dt, output_frequency=output_frequency, maxiter=maxiter) 
 
 	if do_datageneration:
-		t, pt, qt, infidelity, expectedEnergy, population = quandary_mod.simulate(maxcores=8, datadir=trainingdatadir[-1])
+		t, pt, qt, infidelity, expectedEnergy, population = quandary_mod.simulate(maxcores=maxcores, datadir=trainingdatadir[-1])
 		print("-> Generated trajectory for constant pulse amplitude ", ctrlMHz, ", data_dir=", trainingdatadir[-1])
  
 print("Perturbation Hamiltonian (to be learned!), unit MHz: ") 
@@ -108,8 +110,9 @@ UDEmodel = "hamiltonian, lindblad"
 # UDEmodel = "hamiltonian"   
 # Set the training time domain
 T_train = T
-# Add data type specifyier to the first element of the data list
-trainingdatadir[0] = "syntheticRho, "+trainingdatadir[0]
+# Set training data identifier and all filenames (all initial conditions)
+data_identifier = "synthetic" # synthetic (Quandary) data for density matrices
+data_filenames = ["rho_Re.iinit0000.dat", "rho_Im.iinit0000.dat"] # all initial conditions
 
 # Switch between tikhonov regularization norms (L1 or L2 norm)
 tik0_onenorm = True 			#  Use L1 for sparsification property
@@ -118,6 +121,17 @@ loss_scaling_factor = 1e3
 
 # Output directory for training
 UDEdatadir = cwd + "/UDE_stdHam_perturb_"+str(rand_amp_MHz)+"MHz_npulses"+str(len(constctrl_MHz))+"_rundir"
+
+# Prepare the trainingdata list that is passed to Quandary. Format:
+# ["identifyier, dir1, filename1, filename2, ...",  # 1st pulse
+#  "identifyier, dir2, filename1, filename2, ...", 	# 2nd pulse
+#  ...] 
+trainingdata = []
+for dir in trainingdatadir:
+	mystring = data_identifier + ", " + dir
+	for filename in data_filenames:
+		mystring +=  ", " + filename
+	trainingdata.append(mystring)
 
 # Set training optimization parameters
 quandary.gamma_tik0 = 1e-8
@@ -132,7 +146,6 @@ quandary.gamma_energy = 0.0
 quandary.gamma_dpdm = 0.0
 
 if do_training:
-	maxcores = 1 # Generalize to multiple tasks. Fix me!
 	print("\n Starting UDE training (UDEmodel=", UDEmodel, ")...")
 
 	if do_prune:
@@ -142,19 +155,19 @@ if do_training:
 		cutoff = 1e-1
 		params = [0.0 if abs(p) < cutoff else p for p in params]
 		# print("SPARSE ", params)
-		quandary.training(trainingdatadir=trainingdatadir, UDEmodel=UDEmodel, datadir=UDEdatadir, T_train=T_train, learn_params=params, maxcores=maxcores)
+		quandary.training(trainingdata=trainingdata, UDEmodel=UDEmodel, datadir=UDEdatadir, T_train=T_train, learn_params=params, maxcores=maxcores)
 	else:
 		# Start training from scratch
-		quandary.training(trainingdatadir=trainingdatadir, UDEmodel=UDEmodel, datadir=UDEdatadir, T_train=T_train, maxcores=maxcores)
+		quandary.training(trainingdata=trainingdata, UDEmodel=UDEmodel, datadir=UDEdatadir, T_train=T_train, maxcores=maxcores)
 
 	# Simulate forward with optimized paramters to write out the Training data evolutions and the learned evolution
 	filename = UDEdatadir + "/params.dat"
 	params = np.loadtxt(filename)
-	quandary.UDEsimulate(trainingdatadir=trainingdatadir, UDEmodel=UDEmodel, datadir=UDEdatadir+"/FWD_opt", T_train=quandary.T, learn_params=params)
+	quandary.UDEsimulate(trainingdata=trainingdata, UDEmodel=UDEmodel, datadir=UDEdatadir+"/FWD_opt", T_train=quandary.T, learn_params=params)
 
 	# Simulate forward the baseline model using zero learnable parameters to print out evolution
 	zeroinit = np.zeros(len(params))
-	quandary.UDEsimulate(trainingdatadir=trainingdatadir, UDEmodel=UDEmodel, datadir=UDEdatadir+"/FWD_zeroinit", T_train=quandary.T, learn_params=zeroinit)
+	quandary.UDEsimulate(trainingdata=trainingdata, UDEmodel=UDEmodel, datadir=UDEdatadir+"/FWD_zeroinit", T_train=quandary.T, learn_params=zeroinit)
 
 
 #########

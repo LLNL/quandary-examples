@@ -5,6 +5,7 @@
 from quandary import * 
 np.set_printoptions( linewidth=800)
 
+maxcores = 8 # Maximum number of cores used
 
 do_datageneration = True 
 do_training = True 
@@ -79,8 +80,9 @@ Hc_re_mod = quandary.Hc_re.copy()
 Hc_im_mod = quandary.Hc_im.copy()
 
 # Generate training data trajectories for various pulse strength (one trajectory for each element in constctrl_MHz)
-constctrl_MHz = [1.0, 0.5, 2.0]  	# Amplitudes of constant-control training data trajectories
-trainingdatadir = []
+constctrl_MHz = [1.0, 0.5]  # Amplitudes of constant-control training data trajectories
+# constctrl_MHz = [1.0]  	# Amplitudes of constant-control training data trajectories
+trainingdatadir = []	# Stores the directories where training data is generated in
 for ctrlMHz in constctrl_MHz:
 	cwd = os.getcwd()
 	trainingdatadir.append(cwd+"/"+dirprefix+"stdHam_perturb_"+str(rand_amp_MHz)+"MHz_ctrlP"+str(ctrlMHz) + "_ctrlQ"+str(ctrlMHz) +"_rundir")
@@ -111,8 +113,9 @@ print("")
 UDEmodel = "hamiltonian, lindblad"   
 # Set the training time domain
 T_train = T	  
-# Add data type specifyier to the first element of the data list
-trainingdatadir[0] = "syntheticRho, "+trainingdatadir[0]
+# Set training data identifier and all filenames (all initial conditions)
+data_identifier = "synthetic" # synthetic (Quandary) data for density matrices
+data_filenames = ["rho_Re.iinit0000.dat", "rho_Im.iinit0000.dat"] # all initial conditions
 
 # Switch between tikhonov regularization norms (L1 or L2 norm)
 tik0_onenorm = True 			#  Use L1 for sparsification property
@@ -121,6 +124,17 @@ loss_scaling_factor = 1e3
 
 # Output directory for training
 UDEdatadir = cwd+"/" + dirprefix+ "UDE_stdHam_perturb_"+str(rand_amp_MHz)+"MHz_npulses"+str(len(constctrl_MHz))+"_rundir"
+
+# Prepare the trainingdata list that is passed to Quandary. Format:
+# ["identifyier, dir1, filename1, filename2, ...",  # 1st pulse
+#  "identifyier, dir2, filename1, filename2, ...", 	# 2nd pulse
+#  ...] 
+trainingdata = []
+for dir in trainingdatadir:
+	mystring = data_identifier + ", " + dir
+	for filename in data_filenames:
+		mystring +=  ", " + filename
+	trainingdata.append(mystring)
 
 # Set training optimization parameters
 quandary.gamma_tik0 = 1e-9
@@ -137,7 +151,6 @@ quandary.maxiter = 150
 # quandary.maxiter = 2
 
 if do_training:
-	maxcores = 1 # Generalize to multiple tasks. Fix me!
 	print("\n Starting UDE training (UDEmodel=", UDEmodel, ")...")
 
 	if do_prune:
@@ -147,19 +160,20 @@ if do_training:
 		cutoff = 1e-1
 		params = [0.0 if abs(p) < cutoff else p for p in params]
 		# print("SPARSE ", params)
-		quandary.training(trainingdatadir=trainingdatadir, UDEmodel=UDEmodel, datadir=UDEdatadir, T_train=T_train, learn_params=params, maxcores=maxcores)
+		quandary.training(trainingdata=trainingdata, UDEmodel=UDEmodel, datadir=UDEdatadir, T_train=T_train, learn_params=params, maxcores=maxcores)
 	else:
 		# Start training from scratch
-		quandary.training(trainingdatadir=trainingdatadir, UDEmodel=UDEmodel, datadir=UDEdatadir, T_train=T_train, maxcores=maxcores)
+		quandary.training(trainingdata=trainingdata, UDEmodel=UDEmodel, datadir=UDEdatadir, T_train=T_train, maxcores=maxcores)
 
 	# Simulate forward with optimized paramters to write out the Training data evolutions and the learned evolution
 	filename = UDEdatadir + "/params.dat"
 	params = np.loadtxt(filename)
-	quandary.UDEsimulate(trainingdatadir=trainingdatadir, UDEmodel=UDEmodel, datadir=UDEdatadir+"/FWD_opt", T_train=quandary.T, learn_params=params)
+	quandary.UDEsimulate(trainingdata=trainingdata, UDEmodel=UDEmodel, datadir=UDEdatadir+"/FWD_opt", T_train=quandary.T, learn_params=params)
 
 	# Simulate forward the baseline model using zero learnable parameters to print out evolution
+	print("\n -> Eval loss of baseline model with zero learnable parameters.")
 	zeroinit = np.zeros(len(params))
-	quandary.UDEsimulate(trainingdatadir=trainingdatadir, UDEmodel=UDEmodel, datadir=UDEdatadir+"/FWD_zeroinit", T_train=quandary.T, learn_params=zeroinit)
+	quandary.UDEsimulate(trainingdata=trainingdata, UDEmodel=UDEmodel, datadir=UDEdatadir+"/FWD_zeroinit", T_train=quandary.T, learn_params=zeroinit)
 
 # stop
 

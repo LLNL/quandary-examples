@@ -83,8 +83,10 @@ UDEmodel = "transferLinear"
 
 # Set the training time domain
 T_train = T	  
-# Add data type specifyier to the first element of the data list
-trainingdatadir[0] = "syntheticRho, "+trainingdatadir[0]
+
+# Set training data identifier and all filenames (all initial conditions)
+data_identifier = "synthetic" # synthetic (Quandary) data for density matrices
+data_filenames = ["rho_Re.iinit0000.dat", "rho_Im.iinit0000.dat"] # all initial conditions
 
 # Switch between tikhonov regularization norms (L1 or L2 norm)
 tik0_onenorm = True 			#  Use L1 for sparsification property
@@ -93,6 +95,19 @@ loss_scaling_factor = 1e3
 
 # Output directory for training
 UDEdatadir = cwd+"/" + dirprefix+ "_UDE"
+
+# Prepare the trainingdata list that is passed to Quandary. Format:
+# trainingdatadir = ["identifyier, dir1, filename1, filename2, ...",    # 1st pulse
+# 					 "identifyier, dir2, filename1, filename2, ...", 	# 2nd pulse
+# 					 ...] 
+trainingdata = []
+for dir in trainingdatadir:
+	mystring = data_identifier + ", " + dir
+	for filename in data_filenames:
+		mystring +=  ", " + filename
+	trainingdata.append(mystring)
+
+
 
 # Set training optimization parameters
 quandary.gamma_tik0 = 1e-9
@@ -109,18 +124,18 @@ quandary.maxiter = 500
 
 ### TEST: Simulate with transfer functions set to the identity -> Loss should be large!
 # learnparams_identity = [1.0, 1.0] # one for each carrier wave
-# quandary.UDEsimulate(pcof0=pcof_org, trainingdatadir=trainingdatadir, UDEmodel=UDEmodel, learn_params=learnparams_identity, maxcores=8, datadir=UDEdatadir+"_identitytransfer")
+# quandary.UDEsimulate(pcof0=pcof_org, trainingdata=trainingdata, UDEmodel=UDEmodel, learn_params=learnparams_identity, maxcores=8, datadir=UDEdatadir+"_identitytransfer")
 # print(" CHECK: Loss should be large!\n")
 ### TEST: Simulate with transfer functions set to the exact pertubation from above -> Loss should be zero!
 # learnparams_perturb = [id*perturbfac for id in learnparams_identity]
-# quandary.UDEsimulate(pcof0=pcof_org, trainingdatadir=trainingdatadir, UDEmodel=UDEmodel, learn_params=learnparams_perturb, maxcores=8, datadir=UDEdatadir+"_scaledtransfer")
+# quandary.UDEsimulate(pcof0=pcof_org, trainingdata=trainingdata, UDEmodel=UDEmodel, learn_params=learnparams_perturb, maxcores=8, datadir=UDEdatadir+"_scaledtransfer")
 # print(" CHECK: Loss should be zero!\n")
 
 if do_training:
 	print("\n Starting UDE training for UDE model = ", UDEmodel, ")...")
 
 	# Start training, use the unperturbed control parameters in pcof_org
-	quandary.training(pcof0=pcof_org, trainingdatadir=trainingdatadir, UDEmodel=UDEmodel, datadir=UDEdatadir, T_train=T_train)
+	quandary.training(pcof0=pcof_org, trainingdata=trainingdata, UDEmodel=UDEmodel, datadir=UDEdatadir, T_train=T_train, maxcores=8)
 
 	filename = UDEdatadir + "/params.dat"
 	learnparams_opt = np.loadtxt(filename)
@@ -128,9 +143,9 @@ if do_training:
 
 	# Simulate forward with optimized paramters to write out the Training data evolutions and the learned evolution
 	print("\n -> Eval loss of optimized UDE model.")
-	quandary.UDEsimulate(trainingdatadir=trainingdatadir, UDEmodel=UDEmodel, datadir=UDEdatadir+"/FWD_opt", T_train=quandary.T, learn_params=learnparams_opt)
+	quandary.UDEsimulate(trainingdata=trainingdata, UDEmodel=UDEmodel, datadir=UDEdatadir+"/FWD_opt", T_train=quandary.T, learn_params=learnparams_opt, maxcores=8)
 
 	# Simulate forward the baseline model using identity transfer function
 	identityinit = np.ones(len(learnparams_opt))
 	print("\n -> Eval loss of initial guess UDE model.")
-	quandary.UDEsimulate(trainingdatadir=trainingdatadir, UDEmodel=UDEmodel, datadir=UDEdatadir+"/FWD_identityinit", T_train=quandary.T, learn_params=identityinit)
+	quandary.UDEsimulate(trainingdata=trainingdata, UDEmodel=UDEmodel, datadir=UDEdatadir+"/FWD_identityinit", T_train=quandary.T, learn_params=identityinit, maxcores=8)
